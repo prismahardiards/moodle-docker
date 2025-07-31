@@ -1,0 +1,70 @@
+services:
+  moodle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moodle
+    restart: unless-stopped
+    environment:
+      - MOODLE_DATABASE_TYPE=pgsql
+      - MOODLE_DATABASE_HOST=postgres
+      - MOODLE_DATABASE_PORT_NUMBER=5432
+      - MOODLE_DATABASE_NAME=moodle
+      - MOODLE_DATABASE_USER=moodle
+      - MOODLE_DATABASE_PASSWORD=moodlepassword
+      - MOODLE_USERNAME=admin
+      - MOODLE_PASSWORD=adminpassword
+      - MOODLE_EMAIL=admin@example.com
+      - MOODLE_SITE_NAME=My Moodle
+      - MOODLE_SKIP_BOOTSTRAP=no
+      - ALLOW_EMPTY_PASSWORD=no
+      - MOODLE_REDIS_HOST=redis
+      - MOODLE_REDIS_PORT=6379
+    ports:
+      - "6060:8080"
+    volumes:
+      - moodle_data:/bitnami/moodle
+      - moodledata_data:/bitnami/moodledata
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-moodle
+
+  postgres:
+    image: bitnami/postgresql:latest
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=postgrespassword
+      - POSTGRESQL_USERNAME=moodle
+      - POSTGRESQL_PASSWORD=moodlepassword
+      - POSTGRESQL_DATABASE=moodle
+      - ALLOW_EMPTY_PASSWORD=no  
+    volumes:
+      - postgres_data:/bitnami/postgresql
+    networks:
+      - app-moodle
+
+  redis:
+    image: bitnami/redis:latest
+    container_name: redis
+    restart: unless-stopped
+    environment:
+      - REDIS_PASSWORD=redispassword  
+      - ALLOW_EMPTY_PASSWORD=no
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    volumes:
+      - redis_data:/bitnami/redis
+    networks:
+      - app-moodle
+
+volumes:
+  moodle_data:
+  moodledata_data:
+  postgres_data:
+  redis_data:
+
+networks:
+  moodle_network:
+    driver: bridge
