@@ -1,8 +1,9 @@
 services:
   moodle:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile
+    image: prismahardiajiriyantoko/test-image:latest
     container_name: moodle
     restart: unless-stopped
     environment:
@@ -22,6 +23,7 @@ services:
       - MOODLE_REDIS_PORT=6379
     ports:
       - "6060:8080"
+      - "6061:8081"
     volumes:
       - moodle_data:/bitnami/moodle
       - moodledata_data:/bitnami/moodledata
@@ -66,5 +68,5 @@ volumes:
   redis_data:
 
 networks:
-  moodle_network:
+  app-moodle:
     driver: bridge
