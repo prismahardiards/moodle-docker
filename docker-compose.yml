@@ -1,9 +1,9 @@
 services:
   moodle:
-    #build:
-    #  context: .
-    #  dockerfile: Dockerfile
-    image: prismahardiajiriyantoko/test-image:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #image: prismahardiajiriyantoko/test-image:latest
     container_name: moodle
     restart: unless-stopped
     environment:
