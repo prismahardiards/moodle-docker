@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    #image: prismahardiajiriyantoko/test-image:latest
+    image: prismahardiajiriyantoko/test-image:latest
     container_name: moodle
     restart: unless-stopped
     environment:
@@ -21,6 +21,7 @@ services:
       - ALLOW_EMPTY_PASSWORD=no
       - MOODLE_REDIS_HOST=redis
       - MOODLE_REDIS_PORT=6379
+      - MOODLE_REDIS_PASSWORD=redispassword  
     ports:
       - "6060:8080"
       - "6061:8081"
@@ -28,10 +29,17 @@ services:
       - moodle_data:/bitnami/moodle
       - moodledata_data:/bitnami/moodledata
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy  
+      redis:
+        condition: service_started
     networks:
       - app-moodle
+    healthcheck:  
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   postgres:
     image: bitnami/postgresql:latest
@@ -39,7 +47,7 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRESQL_POSTGRES_PASSWORD=postgrespassword
-      - POSTGRESQL_USERNAME=moodle
+      - POSTGRESQL_USER=moodle  
       - POSTGRESQL_PASSWORD=moodlepassword
       - POSTGRESQL_DATABASE=moodle
       - ALLOW_EMPTY_PASSWORD=no  
@@ -47,6 +55,11 @@ services:
       - postgres_data:/bitnami/postgresql
     networks:
       - app-moodle
+    healthcheck: 
+      test: ["CMD-SHELL", "pg_isready -U moodle -d moodle"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: bitnami/redis:latest
@@ -60,6 +73,11 @@ services:
       - redis_data:/bitnami/redis
     networks:
       - app-moodle
+    healthcheck:  
+      test: ["CMD", "redis-cli", "--pass", "redispassword", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   moodle_data:
